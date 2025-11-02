@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technology Systems Training - AI Solutions for Your Business</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>');
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-100px); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 50px;
+            color: #2d3748;
+        }
+
+        .industries {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .industry-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            transition: transform 0.3s;
+            text-align: center;
+        }
+
+        .industry-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .industry-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .assessment-section {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 60px;
+        }
+
+        .question {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .question.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question h3 {
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            color: #2d3748;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.05em;
+        }
+
+        .option:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+            transform: translateX(5px);
+        }
+
+        .option.selected {
+            border-color: #667eea;
+            background: #e6eeff;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            border-radius: 10px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .recommendation-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .recommendation-card h3 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .recommendation-card p {
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .quick-win {
+            background: white;
+            color: #2d3748;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .quick-win h4 {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .lead-capture-form {
+            background: #f7fafc;
+            padding: 40px;
+            border-radius: 15px;
+            margin: 40px 0;
+            border: 2px solid #667eea;
+        }
+
+        .lead-capture-form h3 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        .lead-capture-form p {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .pricing-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .pricing-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .pricing-card.recommended {
+            border-color: #667eea;
+        }
+
+        .pricing-card .badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .pricing-card h3 {
+            color: #2d3748;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .pricing-card .price {
+            font-size: 3em;
+            font-weight: 700;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .pricing-card .price-note {
+            font-size: 0.9em;
+            color: #718096;
+            margin-top: -15px;
+            margin-bottom: 20px;
+        }
+
+        .pricing-card ul {
+            list-style: none;
+            margin: 25px 0;
+            padding: 0;
+        }
+
+        .pricing-card ul li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #4a5568;
+        }
+
+        .pricing-card ul li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .pricing-card .bonus {
+            background: #fef5e7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #f39c12;
+        }
+
+        .pricing-card .bonus strong {
+            color: #f39c12;
+        }
+
+        .buy-button {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .buy-button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .service-card {
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            text-align: center;
+        }
+
+        .service-card h3 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .service-card .price {
+            font-size: 2em;
+            font-weight: 700;
+            color: #2d3748;
+            margin: 20px 0;
+        }
+
+        .contact-form {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contact-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .contact-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+
+        .contact-form textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        footer {
+            background: #2d3748;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2em;
+            }
+            
+            .assessment-section {
+                padding: 30px 20px;
+            }
+            
+            .services-grid, .pricing-options {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="hero-content">
+            <h1>Transform Your Business with AI</h1>
+            <p>Practical AI solutions for Financial Advisors, Teachers, Healthcare, and Non-Profits</p>
+            <a href="#assessment" class="cta-button">Take Free AI Assessment</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="section-title">Industries I Serve</h2>
+        <div class="industries">
+            <div class="industry-card">
+                <div class="industry-icon">💼</div>
+                <h3>Financial Advisors</h3>
+                <p>Automate client reports, meeting notes, and compliance documentation</p>
+            </div>
+            <div class="industry-card">
+                <div class="industry-icon">📚</div>
+                <h3>Teachers & Educators</h3>
+                <p>Streamline lesson planning, content creation, and student assessment</p>
+            </div>
+            <div class="industry-card">
+                <div class="industry-icon">⚕️</div>
+                <h3>Healthcare</h3>
+                <p>Improve patient data analysis and administrative efficiency</p>
+            </div>
+            <div class="industry-card">
+                <div class="industry-icon">🤝</div>
+                <h3>Non-Profits</h3>
+                <p>Enhance donor communications and grant writing</p>
+            </div>
+        </div>
+
+        <div id="assessment" class="assessment-section">
+            <h2 class="section-title">Free AI Inventory Assessment</h2>
+            <p style="text-align: center; font-size: 1.1em; margin-bottom: 40px; color: #4a5568;">
+                Answer 4 quick questions to discover your top 2 AI productivity wins
+            </p>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+
+            <div id="questionnaire">
+                <div class="question active" data-question="1">
+                    <h3>1. Which industry best describes your business?</h3>
+                    <div class="options">
+                        <div class="option" data-value="financial">Financial Advisory</div>
+                        <div class="option" data-value="training">Teachers & Educators</div>
+                        <div class="option" data-value="healthcare">Healthcare</div>
+                        <div class="option" data-value="nonprofit">Non-Profit</div>
+                        <div class="option" data-value="other">Other</div>
+                    </div>
+                </div>
+
+                <div class="question" data-question="2">
+                    <h3>2. How many people are on your team?</h3>
+                    <div class="options">
+                        <div class="option" data-value="solo">Just me</div>
+                        <div class="option" data-value="2-5">2-5 people</div>
+                        <div class="option" data-value="6-15">6-15 people</div>
+                        <div class="option" data-value="16-50">16-50 people</div>
+                        <div class="option" data-value="50plus">50+ people</div>
+                    </div>
+                </div>
+
+                <div class="question" data-question="3">
+                    <h3>3. What's your biggest time drain right now?</h3>
+                    <div class="options">
+                        <div class="option" data-value="meetings">Meetings & follow-ups</div>
+                        <div class="option" data-value="communications">Client/stakeholder communications</div>
+                        <div class="option" data-value="documents">Reports & documentation</div>
+                        <div class="option" data-value="content">Content creation & planning</div>
+                        <div class="option" data-value="admin">Admin & scheduling tasks</div>
+                    </div>
+                </div>
+
+                <div class="question" data-question="4">
+                    <h3>4. How would you describe your current use of AI tools?</h3>
+                    <div class="options">
+                        <div class="option" data-value="none">Not using any AI tools yet</div>
+                        <div class="option" data-value="basic">Experimenting with ChatGPT or similar</div>
+                        <div class="option" data-value="multiple">Using multiple AI tools occasionally</div>
+                        <div class="option" data-value="integrated">Have some integrated AI systems</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-buttons">
+                <button class="btn btn-secondary" id="prevBtn" style="visibility: hidden;">Previous</button>
+                <button class="btn btn-primary" id="nextBtn" disabled>Next</button>
+            </div>
+
+            <div class="results" id="results">
+                <h2 style="text-align: center; margin-bottom: 30px; font-size: 2em;">Your Personalized AI Roadmap</h2>
+                <div class="recommendation-card">
+                    <h3>🎯 Your Top 2 AI Quick Wins</h3>
+                    <p>Based on your responses, here are the two AI solutions that will deliver the fastest impact for your business:</p>
+                </div>
+
+                <div id="recommendations"></div>
+
+                <div class="lead-capture-form">
+                    <h3>Get Your Detailed Results</h3>
+                    <p>Enter your details to receive your personalized AI implementation guide</p>
+                    <form id="leadForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>First Name *</label>
+                                <input type="text" id="firstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name *</label>
+                                <input type="text" id="lastName" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Email *</label>
+                                <input type="email" id="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="tel" id="phone">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input type="text" id="company">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Get My Results & Recommendations</button>
+                    </form>
+                </div>
+
+                <div id="pricingSection" style="display: none;">
+                    <h2 style="text-align: center; margin: 60px 0 40px; font-size: 2.2em; color: #2d3748;">Ready to Implement? Choose Your Path</h2>
+                    
+                    <div class="pricing-options">
+                        <div class="pricing-card recommended">
+                            <div class="badge">⭐ RECOMMENDED</div>
+                            <h3>AI Quick Start Pack</h3>
+                            <div class="price">$147</div>
+                            <p style="color: #4a5568; margin-bottom: 25px;">Work with me personally to implement your AI quick wins</p>
+                            
+                            <ul>
+                                <li><strong>30-minute 1-on-1 implementation call</strong></li>
+                                <li>Live screen-share setup & walkthrough</li>
+                                <li>Recorded session for your team</li>
+                                <li>Industry-specific prompt library (30+ prompts)</li>
+                                <li>Implementation checklist & resources</li>
+                                <li>7-day email support</li>
+                            </ul>
+
+                            <div class="bonus">
+                                <strong>🎁 BONUS:</strong> $147 credit toward $1,500 team workshop if booked within 30 days
+                            </div>
+
+                            <button class="buy-button" onclick="handlePurchase('quickstart', 147)">Book Your Quick Start - $147</button>
+                            
+                            <p style="text-align: center; margin-top: 15px; font-size: 0.9em; color: #718096;">
+                                Perfect if you want personalized guidance
+                            </p>
+                        </div>
+
+                        <div class="pricing-card">
+                            <h3>AI Accelerator Course</h3>
+                            <div class="price">$97</div>
+                            <p style="color: #4a5568; margin-bottom: 25px;">Learn at your own pace with pre-recorded training</p>
+                            
+                            <ul>
+                                <li><strong>45-min pre-recorded video course</strong></li>
+                                <li>Module 1: Meeting Intelligence Mastery</li>
+                                <li>Module 2: AI Email & Communication</li>
+                                <li>Module 3: Custom Prompts & Outputs</li>
+                                <li>Industry-specific prompt library (30+ prompts)</li>
+                                <li>Implementation checklist</li>
+                                <li>Lifetime access + future updates</li>
+                            </ul>
+
+                            <div style="height: 73px;"></div>
+
+                            <button class="buy-button" onclick="handlePurchase('course', 97)">Get Instant Access - $97</button>
+                            
+                            <p style="text-align: center; margin-top: 15px; font-size: 0.9em; color: #718096;">
+                                Perfect if you prefer self-guided learning
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="background: #f7fafc; padding: 30px; border-radius: 15px; margin-top: 50px; text-align: center;">
+                        <h3 style="font-size: 1.8em; margin-bottom: 15px; color: #2d3748;">Want to Train Your Entire Team?</h3>
+                        <p style="font-size: 1.1em; margin-bottom: 20px; color: #4a5568;">
+                            2-Hour Team Workshop - $1,500 (up to 15 people)<br>
+                            Hands-on training with custom workflows for your business
+                        </p>
+                        <a href="#contact" class="cta-button">Learn More About Team Workshops</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="services">
+            <h2 class="section-title">My Services</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <h3>Custom AI Planning</h3>
+                    <p>One-on-one consultation to assess your needs and create a tailored AI strategy for your business.</p>
+                </div>
+                <div class="service-card">
+                    <h3>Team AI Workshops</h3>
+                    <p>Comprehensive team workshop covering AI fundamentals, tool selection, and implementation roadmap.</p>
+                </div>
+                <div class="service-card">
+                    <h3>Ongoing Consultation</h3>
+                    <p>Monthly retainer for continuous support, optimization, and strategic guidance as you scale your AI implementation.</p>
+                </div>
+            </div>
+
+            <h2 class="section-title" style="margin-top: 80px;">Industry-Specific AI Training Courses</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <h3>AI for Financial Advisors</h3>
+                    <p>Master AI tools for client reporting, compliance documentation, portfolio analysis, and personalized client communications. Learn to save 10+ hours per week on repetitive tasks.</p>
+                </div>
+                <div class="service-card">
+                    <h3>AI for Teachers & Educators</h3>
+                    <p>Transform your teaching with AI-powered lesson planning, assessment creation, personalized learning materials, and administrative task automation.</p>
+                </div>
+                <div class="service-card">
+                    <h3>AI for Healthcare Practices</h3>
+                    <p>Streamline patient communications, clinical documentation, appointment summaries, and administrative workflows while maintaining compliance and privacy.</p>
+                </div>
+                <div class="service-card">
+                    <h3>AI for Non-Profits</h3>
+                    <p>Amplify your impact with AI for grant writing, donor communications, impact reporting, volunteer management, and fundraising campaigns.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="contact" style="margin-top: 80px;">
+            <h2 class="section-title">Get In Touch</h2>
+            <div class="contact-form">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Company</label>
+                        <input type="text">
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+                </form>
+                <p style="text-align: center; margin-top: 20px; color: #4a5568;">
+                    Or email me directly: <a href="mailto:matt@technologysystemstraining.com" style="color: #667eea; font-weight: 600;">matt@technologysystemstraining.com</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Technology Systems Training. All rights reserved.</p>
+        <p style="margin-top: 10px;">Helping businesses implement effective AI solutions.</p>
+    </footer>
+
+    <script>
+        let currentQuestion = 1;
+        const totalQuestions = 7;
+        const answers = {};
+        let userInfo = {};
+
+        function updateProgress() {
+            const progress = (currentQuestion / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        function showQuestion(num) {
+            document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+            document.querySelector(`[data-question="${num}"]`).classList.add('active');
+            
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.style.visibility = num === 1 ? 'hidden' : 'visible';
+            nextBtn.textContent = num === totalQuestions ? 'See Results' : 'Next';
+            nextBtn.disabled = !answers[num];
+            
+            updateProgress();
+        }
+
+        document.querySelectorAll('.option').forEach(option => {
+            option.addEventListener('click', function() {
+                const question = this.closest('.question');
+                const questionNum = parseInt(question.dataset.question);
+                
+                question.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
