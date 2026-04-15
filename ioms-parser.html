@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IOMS eHub → SharePoint Migration Parser</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Segoe UI, sans-serif; background: #f3f2f1; color: #323130; }
+
+  header {
+    background: #0078d4; color: white; padding: 16px 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  header h1 { font-size: 18px; font-weight: 600; }
+  header p  { font-size: 13px; opacity: .85; margin-top: 2px; }
+
+  main { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+
+  .card {
+    background: white; border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+    padding: 24px; margin-bottom: 16px;
+  }
+  .card h2 { font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #0078d4; }
+
+  .drop-zone {
+    border: 2px dashed #c8c6c4; border-radius: 4px;
+    padding: 40px; text-align: center; cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .drop-zone:hover, .drop-zone.over {
+    border-color: #0078d4; background: #f0f8ff;
+  }
+  .drop-zone p { color: #605e5c; font-size: 14px; margin-top: 8px; }
+  .drop-zone .icon { font-size: 40px; }
+
+  #fileInput { display: none; }
+
+  .btn {
+    display: inline-block; padding: 8px 16px; border-radius: 2px;
+    font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+    transition: background .15s;
+  }
+  .btn-primary { background: #0078d4; color: white; }
+  .btn-primary:hover { background: #106ebe; }
+  .btn-primary:disabled { background: #c8c6c4; cursor: not-allowed; }
+  .btn-success { background: #107c10; color: white; }
+  .btn-success:hover { background: #0b6a0b; }
+  .btn-secondary { background: white; color: #0078d4; border: 1px solid #0078d4; }
+  .btn-secondary:hover { background: #f0f8ff; }
+
+  #status {
+    font-size: 13px; padding: 10px 14px; border-radius: 2px;
+    margin-top: 12px; display: none;
+  }
+  .status-info    { background: #dff0ff; color: #004578; }
+  .status-success { background: #dff6dd; color: #004b1c; }
+  .status-error   { background: #fde7e9; color: #6e0811; }
+
+  #progress-bar-wrap {
+    background: #edebe9; border-radius: 2px; height: 6px;
+    margin-top: 12px; display: none; overflow: hidden;
+  }
+  #progress-bar { height: 100%; background: #0078d4; width: 0; transition: width .1s; }
+
+  .stats {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px;
+  }
+  .stat {
+    background: #f3f2f1; border-radius: 4px; padding: 12px 20px;
+    text-align: center; min-width: 100px;
+  }
+  .stat .num { font-size: 28px; font-weight: 700; color: #0078d4; }
+  .stat .lbl { font-size: 12px; color: #605e5c; margin-top: 2px; }
+
+  #results { display: none; }
+
+  .download-row {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    background: #f3f2f1; padding: 8px 10px; text-align: left;
+    border-bottom: 2px solid #edebe9; font-weight: 600; white-space: nowrap;
+  }
+  tbody tr:nth-child(even) { background: #faf9f8; }
+  tbody td { padding: 7px 10px; border-bottom: 1px solid #edebe9; vertical-align: top; }
+  tbody tr:hover { background: #f0f8ff; }
+
+  .code-badge {
+    display: inline-block; background: #e1dfdd; border-radius: 2px;
+    padding: 1px 5px; font-size: 11px; margin: 1px; font-family: Consolas, monospace;
+  }
+  .pagetype { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .pt-procedure { background: #dff0ff; color: #004578; }
+  .pt-reference  { background: #e6f7e6; color: #004b1c; }
+  .pt-overview   { background: #fff4ce; color: #5c3d00; }
+  .pt-report     { background: #fde7e9; color: #6e0811; }
+
+  .error-row td { background: #fff4f4 !important; color: #c50f1f; }
+
+  #log {
+    background: #1e1e1e; color: #d4d4d4; font-family: Consolas, monospace;
+    font-size: 12px; padding: 12px; border-radius: 4px; max-height: 200px;
+    overflow-y: auto; margin-top: 12px; display: none;
+  }
+
+  .toggle-log { font-size: 12px; color: #0078d4; cursor: pointer; margin-top: 8px; display: inline-block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>IOMS eHub &rarr; SharePoint Migration Parser</h1>
+    <p>Select your .htm files &mdash; produces migration_manifest.csv and image_manifest.json</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- STEP 1: File selection -->
+  <div class="card">
+    <h2>Step 1 &mdash; Select your IOMS HTML files</h2>
+    <div class="drop-zone" id="dropZone">
+      <div class="icon">&#128193;</div>
+      <strong>Click to select files</strong> or drag &amp; drop
+      <p>Select all .htm files from your IOMSeHub folder (up to 400 at once)</p>
+    </div>
+    <input type="file" id="fileInput" accept=".htm,.html" multiple>
+    <div id="status"></div>
+    <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+  </div>
+
+  <!-- STEP 2: Results -->
+  <div id="results" class="card">
+    <h2>Step 2 &mdash; Review &amp; Download</h2>
+
+    <div class="stats" id="statsRow"></div>
+
+    <div class="download-row" style="margin-top:16px;">
+      <button class="btn btn-success" id="btnCsv">&#8595; Download migration_manifest.csv</button>
+      <button class="btn btn-secondary" id="btnJson">&#8595; Download image_manifest.json</button>
+    </div>
+
+    <p style="font-size:13px;color:#605e5c;margin-bottom:12px;">
+      Open the CSV in Excel Online to review before running migration.
+      Check BusinessArea and Pagetype columns especially.
+    </p>
+
+    <table id="previewTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Title</th>
+          <th>PageKey</th>
+          <th>BusinessArea</th>
+          <th>SubArea</th>
+          <th>Pagetype</th>
+          <th>ScreenCodes</th>
+          <th>Images</th>
+        </tr>
+      </thead>
+      <tbody id="previewBody"></tbody>
+    </table>
+
+    <span class="toggle-log" id="toggleLog">&#9660; Show processing log</span>
+    <div id="log"></div>
+  </div>
+
+</main>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// PARSING LOGIC
+// ─────────────────────────────────────────────────────────────────
+
+const SCREEN_CODE_RE = /\(([A-Z]{2,6}\d{2,4})\)/g;
+
+function getHiddenInput(html, id) {
+  const re = new RegExp(`id="${id}"[^/]*?value="([^"]*)"`, 'i');
+  const re2 = new RegExp(`value="([^"]*)"[^/]*?id="${id}"`, 'i');
+  const m = html.match(re) || html.match(re2);
+  return m ? m[1].trim() : '';
+}
+
+function getScreenCodes(text) {
+  const codes = {};
+  let m;
+  const re = /\(([A-Z]{2,6}\d{2,4})\)/g;
+  while ((m = re.exec(text)) !== null) codes[m[1]] = true;
+  return Object.keys(codes).sort().join('|');
+}
+
+function getBusinessArea(html) {
+  const m = html.match(/class="relatedtopics aboveheading"[\s\S]*?<a\s[^>]*>([^<]+)<\/a>/i);
+  return m ? m[1].trim().replace(/&amp;/g, '&') : '';
+}
+
+function getSubArea(html) {
+  const m = html.match(/<p class="notepp">([^<]+)<\/p>/i);
+  return m ? m[1].trim().replace(/&amp;/g, '&') : '';
+}
+
+function getPageType(html) {
+  if (/class="subheading2">Practice Steps/i.test(html)) return 'Procedure';
+  if (/class="subheading2">Overview/i.test(html))       return 'Overview';
+  if (/class="subheading2">Report/i.test(html))         return 'Report';
+  if (/class="listnumber"/i.test(html))                 return 'Procedure';
+  return 'Reference';
+}
+
+function getTitle(html) {
+  // Try hidden input first (most reliable)
+  let t = getHiddenInput(html, 'topicDescription');
+  if (t) return t;
+  const m = html.match(/<title>\s*([^<]+)\s*<\/title>/i);
+  return m ? m[1].trim() : '';
+}
+
+function getImages(html, pageKey, pageTitle) {
+  const imgs = [];
+  const re = /<img\s+id="f?(\d+)"\s[^>]*src="([^"]+)"[^>]*\/>/gi;
+  let m;
+  while ((m = re.exec(html)) !== null) {
+    const imgId  = m[1];
+    const imgSrc = m[2];
+    const start  = Math.max(0, m.index - 600);
+    const ctx    = html.substring(start, m.index + 200);
+    imgs.push({
+      PageKey:     pageKey,
+      PageTitle:   pageTitle,
+      ImageSrc:    imgSrc,
+      ImageID:     imgId,
+      ScreenCodes: getScreenCodes(ctx)
+    });
+  }
+  return imgs;
+}
+
+function parseHtml(filename, html) {
+  const topicId    = getHiddenInput(html, 'topicId') ||
+                     filename.replace(/\.[^.]+$/, '');
+  const title      = getTitle(html) || topicId;
+  const modified   = getHiddenInput(html, 'footer-modified')
+                       .replace(/^Last modified:\s*/i, '').trim();
+  const modifiedBy = getHiddenInput(html, 'footer-modifiedby')
+                       .replace(/^Modified by:\s*/i, '').trim();
+
+  const images = getImages(html, topicId, title);
+
+  return {
+    Title:        title,
+    PageKey:      topicId,
+    LegacyFile:   `#${topicId}.htm`,
+    BusinessArea: getBusinessArea(html),
+    SubArea:      getSubArea(html),
+    ContentType:  'Topic',
+    Pagetype:     getPageType(html),
+    ScreenCodes:  getScreenCodes(html),
+    ImageCount:   images.length,
+    LastModified: modified,
+    ModifiedBy:   modifiedBy,
+    Status:       'To Do',
+    SourceFile:   filename,
+    _images:      images
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CSV / JSON EXPORT
+// ─────────────────────────────────────────────────────────────────
+
+const CSV_COLS = [
+  'Title','PageKey','LegacyFile','BusinessArea','SubArea',
+  'ContentType','Pagetype','ScreenCodes','ImageCount',
+  'LastModified','ModifiedBy','Status','SourceFile'
+];
+
+function escapeCsv(val) {
+  if (val === null || val === undefined) return '';
+  const s = String(val);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function toCSV(rows) {
+  const header = CSV_COLS.join(',');
+  const lines  = rows.map(r => CSV_COLS.map(c => escapeCsv(r[c])).join(','));
+  return '\uFEFF' + [header, ...lines].join('\r\n');
+}
+
+function download(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const a    = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(blob), download: filename
+  });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// UI
+// ─────────────────────────────────────────────────────────────────
+
+let parsedPages  = [];
+let parsedImages = [];
+
+function setStatus(msg, type) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = `status-${type}`;
+  el.style.display = 'block';
+}
+
+function log(msg) {
+  const el = document.getElementById('log');
+  el.textContent += msg + '\n';
+  el.scrollTop = el.scrollHeight;
+}
+
+function setProgress(pct) {
+  const wrap = document.getElementById('progress-bar-wrap');
+  const bar  = document.getElementById('progress-bar');
+  wrap.style.display = 'block';
+  bar.style.width    = `${pct}%`;
+}
+
+function pagetypeClass(pt) {
+  const map = { Procedure: 'pt-procedure', Reference: 'pt-reference',
+                Overview: 'pt-overview', Report: 'pt-report' };
+  return map[pt] || 'pt-reference';
+}
+
+function renderTable(pages) {
+  const tbody = document.getElementById('previewBody');
+  tbody.innerHTML = '';
+  pages.forEach((p, i) => {
+    const tr = document.createElement('tr');
+    if (p._error) tr.className = 'error-row';
+    const codes = p.ScreenCodes
+      ? p.ScreenCodes.split('|').map(c => `<span class="code-badge">${c}</span>`).join('')
+      : '<span style="color:#a19f9d">—</span>';
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>${p.Title || p.SourceFile}</td>
+      <td><code>${p.PageKey}</code></td>
+      <td>${p.BusinessArea || '<span style="color:#a19f9d">—</span>'}</td>
+      <td>${p.SubArea || '<span style="color:#a19f9d">—</span>'}</td>
+      <td><span class="pagetype ${pagetypeClass(p.Pagetype)}">${p.Pagetype}</span></td>
+      <td>${codes}</td>
+      <td style="text-align:center">${p.ImageCount}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderStats(pages, images, errors) {
+  const procedureCount = pages.filter(p => p.Pagetype === 'Procedure').length;
+  const codesCount     = pages.filter(p => p.ScreenCodes).length;
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat"><div class="num">${pages.length}</div><div class="lbl">Pages</div></div>
+    <div class="stat"><div class="num">${procedureCount}</div><div class="lbl">Procedures</div></div>
+    <div class="stat"><div class="num">${images.length}</div><div class="lbl">Images</div></div>
+    <div class="stat"><div class="num">${codesCount}</div><div class="lbl">With Screen Codes</div></div>
+    <div class="stat"><div class="num" style="color:${errors > 0 ? '#c50f1f' : '#107c10'}">${errors}</div><div class="lbl">Errors</div></div>`;
+}
+
+async function processFiles(files) {
+  const arr     = Array.from(files).filter(f => /\.html?$/i.test(f.name));
+  if (!arr.length) { setStatus('No .htm/.html files found in selection.', 'error'); return; }
+
+  setStatus(`Processing ${arr.length} files...`, 'info');
+  setProgress(0);
+  document.getElementById('log').style.display = 'block';
+  parsedPages  = [];
+  parsedImages = [];
+  let errors = 0;
+
+  for (let i = 0; i < arr.length; i++) {
+    const file = arr[i];
+    try {
+      const html   = await file.text();
+      const result = parseHtml(file.name, html);
+      parsedPages.push(result);
+      parsedImages.push(...result._images);
+      log(`OK  ${file.name.padEnd(22)} '${result.Title.substring(0,50)}'`);
+    } catch (e) {
+      errors++;
+      parsedPages.push({ Title: '', PageKey: '', LegacyFile: '', BusinessArea: '',
+        SubArea: '', ContentType: 'Topic', Pagetype: 'Reference', ScreenCodes: '',
+        ImageCount: 0, LastModified: '', ModifiedBy: '',
+        Status: 'Error', SourceFile: file.name, _error: true });
+      log(`ERR ${file.name}: ${e.message}`);
+    }
+    setProgress(Math.round((i + 1) / arr.length * 100));
+  }
+
+  renderTable(parsedPages);
+  renderStats(parsedPages, parsedImages, errors);
+  document.getElementById('results').style.display = 'block';
+  setStatus(
+    `Done. ${parsedPages.length - errors} pages parsed, ${errors} errors. Download your files below.`,
+    errors ? 'error' : 'success'
+  );
+  document.getElementById('progress-bar').style.width = '100%';
+}
+
+// ─────────────────────────────────────────────────────────────────
+// EVENT WIRING
+// ─────────────────────────────────────────────────────────────────
+
+const dropZone  = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault(); dropZone.classList.add('over');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('over');
+  processFiles(e.dataTransfer.files);
+});
+
+fileInput.addEventListener('change', () => processFiles(fileInput.files));
+
+document.getElementById('btnCsv').addEventListener('click', () => {
+  if (!parsedPages.length) return;
+  download('migration_manifest.csv', toCSV(parsedPages), 'text/csv;charset=utf-8');
+});
+
+document.getElementById('btnJson').addEventListener('click', () => {
+  if (!parsedImages.length) return;
+  download('image_manifest.json',
+    JSON.stringify(parsedImages, null, 2), 'application/json');
+});
+
+document.getElementById('toggleLog').addEventListener('click', function() {
+  const log = document.getElementById('log');
+  const vis = log.style.display !== 'none';
+  log.style.display = vis ? 'none' : 'block';
+  this.textContent  = (vis ? '▼' : '▲') + ' Show processing log';
+});
+</script>
+</body>
+</html>
