@@ -99,6 +99,41 @@ function Get-BadgeColour([string]$area) {
     return "#605E5C"  # default grey
 }
 
+function Initialize-SiteColumns {
+    <#
+    .SYNOPSIS
+        One-time setup: creates ScreenCodes column on Site Pages and Site Assets
+        if they don't already exist. Safe to re-run — skips existing columns.
+    #>
+    Write-Status "`nInitializing site columns..."
+
+    # ScreenCodes on Site Pages library (pipe-separated, e.g. "CSP440|CSP310")
+    $spField = Get-PnPField -List $sitePagesLib -Identity "ScreenCodes" -ErrorAction SilentlyContinue
+    if (-not $spField) {
+        Add-PnPField -List $sitePagesLib `
+                     -DisplayName "ScreenCodes" `
+                     -InternalName "ScreenCodes" `
+                     -Type Note `
+                     -AddToDefaultView | Out-Null
+        Write-Status "  Created ScreenCodes column on '$sitePagesLib'" "Green"
+    } else {
+        Write-Status "  ScreenCodes already exists on '$sitePagesLib'" "Gray"
+    }
+
+    # ScreenCode on Site Assets library (for image tagging)
+    $saField = Get-PnPField -List "Site Assets" -Identity "ScreenCode" -ErrorAction SilentlyContinue
+    if (-not $saField) {
+        Add-PnPField -List "Site Assets" `
+                     -DisplayName "ScreenCode" `
+                     -InternalName "ScreenCode" `
+                     -Type Text `
+                     -AddToDefaultView | Out-Null
+        Write-Status "  Created ScreenCode column on 'Site Assets'" "Green"
+    } else {
+        Write-Status "  ScreenCode already exists on 'Site Assets'" "Gray"
+    }
+}
+
 # ── Connect ───────────────────────────────────────────────────────────────────
 
 Write-Status "Connecting to $SiteUrl"
@@ -117,8 +152,15 @@ if (-not (Test-Path $CsvPath)) {
 $pages = Import-Csv -Path $CsvPath -Encoding UTF8
 Write-Status "Loaded $($pages.Count) pages from $CsvPath"
 
-$templateRelUrl = "SitePages/Templates/Page-template.aspx"
-$sitePagesLib   = "Site Pages"
+$templateRelUrl  = "SitePages/Templates/Page-template.aspx"
+$sitePagesLib    = "Site Pages"
+$defaultContentType = "Topic"
+
+# ── One-time column setup ─────────────────────────────────────────────────────
+
+if (-not $WhatIf) {
+    Initialize-SiteColumns
+}
 
 # ── Image upload (optional) ───────────────────────────────────────────────────
 
@@ -152,7 +194,7 @@ if ($ImageFolder -and (Test-Path $ImageFolder)) {
             Invoke-WithRetry {
                 $uploaded = Add-PnPFile -Path $imgFile.FullName -Folder $targetFolder
                 if ($screenCodes) {
-                    Set-PnPListItem -List "Documents" -Identity $uploaded.ListItemAllFields.Id `
+                    Set-PnPListItem -List "Site Assets" -Identity $uploaded.ListItemAllFields.Id `
                         -Values @{ "ScreenCode" = $screenCodes } | Out-Null
                 }
             }
@@ -236,17 +278,17 @@ foreach ($page in $pages) {
         Set-PnPPage -Identity $pageName -Title $title | Out-Null
 
         # 3. Set metadata columns on the list item
+        # Note: "ContentType" is a reserved SP column name. If Set-PnPListItem
+        # throws on it, check the field's actual InternalName in List Settings
+        # and update the key below (commonly "ContentType0" on migrated sites).
         $metaValues = @{
-            "PageKey"       = $pageKey
-            "LegacyFile"    = $legacyFile
-            "BusinessArea"  = $bizArea
-            "ContentType0"  = $contentType   # note: ContentType is reserved; adjust field name if needed
-            "Pagetype"      = $pagetype
-            "Status"        = $status
-        }
-        # Only set ScreenCodes if the column exists
-        if ($screenCodes) {
-            $metaValues["ScreenCodes"] = $screenCodes
+            "PageKey"      = $pageKey
+            "LegacyFile"   = $legacyFile
+            "BusinessArea" = $bizArea
+            "ContentType"  = $defaultContentType
+            "Pagetype"     = $pagetype
+            "ScreenCodes"  = $screenCodes   # empty string is fine if no codes
+            "Status"       = $status
         }
 
         Invoke-WithRetry {

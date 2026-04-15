@@ -95,9 +95,11 @@ def parse_html_file(filepath: Path) -> dict:
         if link:
             business_area = link.text.strip()
 
-    # --- Content type hint (e.g. "Probation & Parole") ---
+    # --- ContentType: default "Topic" for almost all pages ---
+    # notepp (e.g. "Probation & Parole") is kept as SubArea for reference
     notepp = soup.find('p', class_='notepp')
-    content_type = notepp.text.strip() if notepp else ''
+    sub_area = notepp.text.strip() if notepp else ''
+    content_type = 'Topic'
 
     # --- Page type ---
     pagetype = detect_pagetype(soup)
@@ -123,6 +125,7 @@ def parse_html_file(filepath: Path) -> dict:
         'page_key': topic_id,
         'legacy_file': legacy_file,
         'business_area': business_area,
+        'sub_area': sub_area,
         'content_type': content_type,
         'pagetype': pagetype,
         'screen_codes': screen_codes,
@@ -159,6 +162,7 @@ def process_folder(input_folder: str, csv_out: str, img_out: str):
                 'PageKey': data['page_key'],
                 'LegacyFile': data['legacy_file'],
                 'BusinessArea': data['business_area'],
+                'SubArea': data['sub_area'],
                 'ContentType': data['content_type'],
                 'Pagetype': data['pagetype'],
                 'ScreenCodes': '|'.join(data['screen_codes']),
